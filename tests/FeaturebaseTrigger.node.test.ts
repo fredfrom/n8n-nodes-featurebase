@@ -14,6 +14,7 @@ function createMockHookFunctions(overrides: Record<string, any> = {}) {
 		getNode: jest.fn().mockReturnValue({ name: 'Featurebase Trigger' }),
 		helpers: {
 			httpRequest: jest.fn().mockResolvedValue([]),
+			httpRequestWithAuthentication: jest.fn().mockResolvedValue([]),
 		},
 		...overrides,
 	};
@@ -151,7 +152,7 @@ describe('FeaturebaseTrigger Node', () => {
 			const mock = createMockHookFunctions({
 				getWorkflowStaticData: jest.fn().mockReturnValue(staticData),
 				helpers: {
-					httpRequest: jest.fn().mockResolvedValue([
+					httpRequestWithAuthentication: jest.fn().mockResolvedValue([
 						{
 							id: 'wh_existing',
 							url: 'https://n8n.example.com/webhook/abc',
@@ -171,7 +172,7 @@ describe('FeaturebaseTrigger Node', () => {
 		it('should return false when no matching webhook exists', async () => {
 			const mock = createMockHookFunctions({
 				helpers: {
-					httpRequest: jest.fn().mockResolvedValue([
+					httpRequestWithAuthentication: jest.fn().mockResolvedValue([
 						{ id: 'wh_other', url: 'https://other.com/hook', topics: ['post.created'] },
 					]),
 				},
@@ -186,7 +187,7 @@ describe('FeaturebaseTrigger Node', () => {
 		it('should return false when event does not match', async () => {
 			const mock = createMockHookFunctions({
 				helpers: {
-					httpRequest: jest.fn().mockResolvedValue([
+					httpRequestWithAuthentication: jest.fn().mockResolvedValue([
 						{
 							id: 'wh_wrong_event',
 							url: 'https://n8n.example.com/webhook/abc',
@@ -205,7 +206,7 @@ describe('FeaturebaseTrigger Node', () => {
 		it('should return false when the API call fails', async () => {
 			const mock = createMockHookFunctions({
 				helpers: {
-					httpRequest: jest.fn().mockRejectedValue(new Error('Network error')),
+					httpRequestWithAuthentication: jest.fn().mockRejectedValue(new Error('Network error')),
 				},
 			});
 
@@ -215,39 +216,36 @@ describe('FeaturebaseTrigger Node', () => {
 			expect(result).toBe(false);
 		});
 
-		it('should call GET /v2/webhooks with correct auth headers', async () => {
-			const httpRequest = jest.fn().mockResolvedValue([]);
+		it('should call GET /v2/webhooks using httpRequestWithAuthentication', async () => {
+			const httpRequestWithAuth = jest.fn().mockResolvedValue([]);
 			const mock = createMockHookFunctions({
-				helpers: { httpRequest },
+				helpers: { httpRequestWithAuthentication: httpRequestWithAuth },
 			});
 
 			const fn = trigger.webhookMethods.default.checkExists;
 			await fn.call(mock as any);
 
-			expect(httpRequest).toHaveBeenCalledWith(
+			expect(httpRequestWithAuth).toHaveBeenCalledWith(
+				'featurebaseApi',
 				expect.objectContaining({
 					method: 'GET',
 					url: 'https://do.featurebase.app/v2/webhooks',
-					headers: expect.objectContaining({
-						Authorization: 'Bearer test-key-placeholder',
-						'Featurebase-Version': '2026-01-01.nova',
-					}),
 				}),
 			);
 		});
 
 		it('should return false for non-HTTPS URLs without calling API', async () => {
-			const httpRequest = jest.fn().mockResolvedValue([]);
+			const httpRequestWithAuth = jest.fn().mockResolvedValue([]);
 			const mock = createMockHookFunctions({
 				getNodeWebhookUrl: jest.fn().mockReturnValue('http://localhost:5678/webhook/abc'),
-				helpers: { httpRequest },
+				helpers: { httpRequestWithAuthentication: httpRequestWithAuth },
 			});
 
 			const fn = trigger.webhookMethods.default.checkExists;
 			const result = await fn.call(mock as any);
 
 			expect(result).toBe(false);
-			expect(httpRequest).not.toHaveBeenCalled();
+			expect(httpRequestWithAuth).not.toHaveBeenCalled();
 		});
 	});
 
@@ -255,11 +253,11 @@ describe('FeaturebaseTrigger Node', () => {
 
 	describe('create webhook', () => {
 		it('should POST to /v2/webhooks with url and topics', async () => {
-			const httpRequest = jest.fn().mockResolvedValue({ id: 'wh_new123' });
+			const httpRequestWithAuth = jest.fn().mockResolvedValue({ id: 'wh_new123' });
 			const staticData: Record<string, any> = {};
 			const mock = createMockHookFunctions({
 				getWorkflowStaticData: jest.fn().mockReturnValue(staticData),
-				helpers: { httpRequest },
+				helpers: { httpRequestWithAuthentication: httpRequestWithAuth },
 			});
 
 			const fn = trigger.webhookMethods.default.create;
@@ -267,7 +265,8 @@ describe('FeaturebaseTrigger Node', () => {
 
 			expect(result).toBe(true);
 			expect(staticData.webhookId).toBe('wh_new123');
-			expect(httpRequest).toHaveBeenCalledWith(
+			expect(httpRequestWithAuth).toHaveBeenCalledWith(
+				'featurebaseApi',
 				expect.objectContaining({
 					method: 'POST',
 					url: 'https://do.featurebase.app/v2/webhooks',
@@ -276,11 +275,6 @@ describe('FeaturebaseTrigger Node', () => {
 						url: 'https://n8n.example.com/webhook/abc',
 						topics: ['post.created'],
 					},
-					headers: expect.objectContaining({
-						Authorization: 'Bearer test-key-placeholder',
-						'Featurebase-Version': '2026-01-01.nova',
-						'Content-Type': 'application/json',
-					}),
 				}),
 			);
 		});
@@ -288,7 +282,7 @@ describe('FeaturebaseTrigger Node', () => {
 		it('should throw NodeApiError when response has no id', async () => {
 			const mock = createMockHookFunctions({
 				helpers: {
-					httpRequest: jest.fn().mockResolvedValue({}),
+					httpRequestWithAuthentication: jest.fn().mockResolvedValue({}),
 				},
 			});
 
@@ -299,7 +293,7 @@ describe('FeaturebaseTrigger Node', () => {
 		it('should throw NodeApiError when the API call fails', async () => {
 			const mock = createMockHookFunctions({
 				helpers: {
-					httpRequest: jest.fn().mockRejectedValue(new Error('403 Forbidden')),
+					httpRequestWithAuthentication: jest.fn().mockRejectedValue(new Error('403 Forbidden')),
 				},
 			});
 
@@ -308,17 +302,17 @@ describe('FeaturebaseTrigger Node', () => {
 		});
 
 		it('should return true without calling API for non-HTTPS URLs', async () => {
-			const httpRequest = jest.fn();
+			const httpRequestWithAuth = jest.fn();
 			const mock = createMockHookFunctions({
 				getNodeWebhookUrl: jest.fn().mockReturnValue('http://localhost:5678/webhook/abc'),
-				helpers: { httpRequest },
+				helpers: { httpRequestWithAuthentication: httpRequestWithAuth },
 			});
 
 			const fn = trigger.webhookMethods.default.create;
 			const result = await fn.call(mock as any);
 
 			expect(result).toBe(true);
-			expect(httpRequest).not.toHaveBeenCalled();
+			expect(httpRequestWithAuth).not.toHaveBeenCalled();
 		});
 	});
 
@@ -326,11 +320,11 @@ describe('FeaturebaseTrigger Node', () => {
 
 	describe('delete webhook', () => {
 		it('should DELETE /v2/webhooks/{id} and clean up static data', async () => {
-			const httpRequest = jest.fn().mockResolvedValue({});
+			const httpRequestWithAuth = jest.fn().mockResolvedValue({});
 			const staticData: Record<string, any> = { webhookId: 'wh_todelete' };
 			const mock = createMockHookFunctions({
 				getWorkflowStaticData: jest.fn().mockReturnValue(staticData),
-				helpers: { httpRequest },
+				helpers: { httpRequestWithAuthentication: httpRequestWithAuth },
 			});
 
 			const fn = trigger.webhookMethods.default.delete;
@@ -338,7 +332,8 @@ describe('FeaturebaseTrigger Node', () => {
 
 			expect(result).toBe(true);
 			expect(staticData.webhookId).toBeUndefined();
-			expect(httpRequest).toHaveBeenCalledWith(
+			expect(httpRequestWithAuth).toHaveBeenCalledWith(
+				'featurebaseApi',
 				expect.objectContaining({
 					method: 'DELETE',
 					url: 'https://do.featurebase.app/v2/webhooks/wh_todelete',
@@ -347,17 +342,17 @@ describe('FeaturebaseTrigger Node', () => {
 		});
 
 		it('should return true immediately when no webhookId in static data', async () => {
-			const httpRequest = jest.fn();
+			const httpRequestWithAuth = jest.fn();
 			const mock = createMockHookFunctions({
 				getWorkflowStaticData: jest.fn().mockReturnValue({}),
-				helpers: { httpRequest },
+				helpers: { httpRequestWithAuthentication: httpRequestWithAuth },
 			});
 
 			const fn = trigger.webhookMethods.default.delete;
 			const result = await fn.call(mock as any);
 
 			expect(result).toBe(true);
-			expect(httpRequest).not.toHaveBeenCalled();
+			expect(httpRequestWithAuth).not.toHaveBeenCalled();
 		});
 
 		it('should return false when the API call fails', async () => {
@@ -365,7 +360,7 @@ describe('FeaturebaseTrigger Node', () => {
 			const mock = createMockHookFunctions({
 				getWorkflowStaticData: jest.fn().mockReturnValue(staticData),
 				helpers: {
-					httpRequest: jest.fn().mockRejectedValue(new Error('500')),
+					httpRequestWithAuthentication: jest.fn().mockRejectedValue(new Error('500')),
 				},
 			});
 

@@ -84,17 +84,15 @@ export class FeaturebaseTrigger implements INodeType {
 					return false;
 				}
 
-				const credentials = await this.getCredentials('featurebaseApi');
-
 				try {
-					const response = (await this.helpers.httpRequest({
-						method: 'GET',
-						url: 'https://do.featurebase.app/v2/webhooks',
-						headers: {
-							Authorization: `Bearer ${credentials.apiKey as string}`,
-							'Featurebase-Version': '2026-01-01.nova',
+					const response = (await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'featurebaseApi',
+						{
+							method: 'GET',
+							url: 'https://do.featurebase.app/v2/webhooks',
 						},
-					})) as IDataObject[];
+					)) as IDataObject[];
 
 					for (const webhook of response) {
 						const topics = webhook.topics as string[] | undefined;
@@ -119,8 +117,6 @@ export class FeaturebaseTrigger implements INodeType {
 					return true;
 				}
 
-				const credentials = await this.getCredentials('featurebaseApi');
-
 				const body: IDataObject = {
 					name: `n8n-${event}`,
 					url: webhookUrl,
@@ -128,16 +124,15 @@ export class FeaturebaseTrigger implements INodeType {
 				};
 
 				try {
-					const response = (await this.helpers.httpRequest({
-						method: 'POST',
-						url: 'https://do.featurebase.app/v2/webhooks',
-						headers: {
-							Authorization: `Bearer ${credentials.apiKey as string}`,
-							'Featurebase-Version': '2026-01-01.nova',
-							'Content-Type': 'application/json',
+					const response = (await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'featurebaseApi',
+						{
+							method: 'POST',
+							url: 'https://do.featurebase.app/v2/webhooks',
+							body,
 						},
-						body,
-					})) as IDataObject;
+					)) as IDataObject;
 
 					if (!response.id) {
 						throw new NodeApiError(this.getNode(), response as unknown as JsonObject, {
@@ -162,17 +157,15 @@ export class FeaturebaseTrigger implements INodeType {
 					return true;
 				}
 
-				const credentials = await this.getCredentials('featurebaseApi');
-
 				try {
-					await this.helpers.httpRequest({
-						method: 'DELETE',
-						url: `https://do.featurebase.app/v2/webhooks/${webhookId}`,
-						headers: {
-							Authorization: `Bearer ${credentials.apiKey as string}`,
-							'Featurebase-Version': '2026-01-01.nova',
+					await this.helpers.httpRequestWithAuthentication.call(
+						this,
+						'featurebaseApi',
+						{
+							method: 'DELETE',
+							url: `https://do.featurebase.app/v2/webhooks/${webhookId}`,
 						},
-					});
+					);
 				} catch (error) {
 					return false;
 				}
