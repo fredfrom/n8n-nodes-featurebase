@@ -1,0 +1,17 @@
+{
+	"node": "n8n-nodes-featurebase.featurebaseTrigger",
+	"nodeVersion": "1.0",
+	"codexVersion": "1.0",
+	"categories": ["Communication"],
+	"subcategories": {
+		"Communication": ["Other"]
+	},
+	"resources": {
+		"primaryDocumentation": [
+			{
+				"url": "https://docs.featurebase.app/rest-api"
+			}
+		]
+	},
+	"alias": ["feedback", "roadmap", "changelog", "featurebase", "webhook"]
+}

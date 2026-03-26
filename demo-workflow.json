@@ -1,0 +1,517 @@
+{
+	"name": "Featurebase Full Test",
+	"nodes": [
+		{
+			"parameters": {},
+			"id": "start",
+			"name": "Start",
+			"type": "n8n-nodes-base.manualTrigger",
+			"typeVersion": 1,
+			"position": [0, 300]
+		},
+		{
+			"parameters": {
+				"resource": "board",
+				"operation": "getMany"
+			},
+			"id": "n01",
+			"name": "List Boards",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [260, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"jsCode": "return [{ json: { boardId: $input.first().json.id } }];"
+			},
+			"id": "n02",
+			"name": "Pick Board",
+			"type": "n8n-nodes-base.code",
+			"typeVersion": 2,
+			"position": [480, 300]
+		},
+		{
+			"parameters": {
+				"resource": "board",
+				"operation": "get",
+				"boardId": "={{ $json.boardId }}"
+			},
+			"id": "n03",
+			"name": "Get Board",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [700, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "post",
+				"operation": "create",
+				"title": "Demo Post from n8n",
+				"boardId": "={{ $json.id }}",
+				"additionalFields": {
+					"content": "<p>Created by the Featurebase n8n node test workflow.</p>",
+					"tags": "demo, n8n-test"
+				}
+			},
+			"id": "n04",
+			"name": "Create Post",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [920, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "post",
+				"operation": "get",
+				"postId": "={{ $json.id }}"
+			},
+			"id": "n05",
+			"name": "Get Post",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [1140, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "post",
+				"operation": "update",
+				"postId": "={{ $json.id }}",
+				"updateFields": {
+					"title": "Updated Demo Post",
+					"content": "<p>Updated by n8n test workflow.</p>"
+				}
+			},
+			"id": "n06",
+			"name": "Update Post",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [1360, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "post",
+				"operation": "getMany",
+				"limit": 5,
+				"filters": {
+					"sortBy": "createdAt"
+				}
+			},
+			"id": "n07",
+			"name": "List Posts",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [1580, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "comment",
+				"operation": "create",
+				"postId": "={{ $('Create Post').first().json.id }}",
+				"content": "<p>Demo comment from n8n test workflow.</p>",
+				"additionalFields": {
+					"isPrivate": false
+				}
+			},
+			"id": "n08",
+			"name": "Create Comment",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [1800, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "comment",
+				"operation": "getMany",
+				"postId": "={{ $('Create Post').first().json.id }}",
+				"limit": 10
+			},
+			"id": "n09",
+			"name": "List Comments",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [2020, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "comment",
+				"operation": "delete",
+				"commentId": "={{ $('Create Comment').first().json.id }}"
+			},
+			"id": "n10",
+			"name": "Delete Comment",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [2240, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "post",
+				"operation": "delete",
+				"postId": "={{ $('Create Post').first().json.id }}"
+			},
+			"id": "n11",
+			"name": "Delete Post",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [2460, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "changelog",
+				"operation": "create",
+				"title": "Demo Changelog from n8n",
+				"htmlContent": "<h2>What is New</h2><p>Created by the Featurebase n8n node test workflow.</p>",
+				"additionalFields": {
+					"state": "draft"
+				}
+			},
+			"id": "n12",
+			"name": "Create Changelog",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [2680, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "changelog",
+				"operation": "get",
+				"changelogId": "={{ $json.id }}"
+			},
+			"id": "n13",
+			"name": "Get Changelog",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [2900, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "changelog",
+				"operation": "update",
+				"changelogId": "={{ $json.id }}",
+				"updateFields": {
+					"title": "Updated Demo Changelog"
+				}
+			},
+			"id": "n14",
+			"name": "Update Changelog",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [3120, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "changelog",
+				"operation": "getMany",
+				"limit": 5
+			},
+			"id": "n15",
+			"name": "List Changelogs",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [3340, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "changelog",
+				"operation": "delete",
+				"changelogId": "={{ $('Create Changelog').first().json.id }}"
+			},
+			"id": "n16",
+			"name": "Delete Changelog",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [3560, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "contact",
+				"operation": "upsert",
+				"email": "demo-n8n-test@example.com",
+				"additionalFields": {
+					"name": "Demo Contact"
+				}
+			},
+			"id": "n17",
+			"name": "Upsert Contact",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [3780, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "contact",
+				"operation": "get",
+				"contactId": "={{ $json.id }}"
+			},
+			"id": "n18",
+			"name": "Get Contact",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [4000, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"resource": "contact",
+				"operation": "getMany",
+				"limit": 10
+			},
+			"id": "n19",
+			"name": "List Contacts",
+			"type": "n8n-nodes-featurebase.featurebase",
+			"typeVersion": 1,
+			"position": [4220, 300],
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+
+		{
+			"parameters": {
+				"content": "## Trigger Tests\nTriggers are webhook-based and need a separate test:\n1. Open a trigger node below, click **Listen for test event**\n2. Copy the webhook URL shown\n3. Run: `export FEATUREBASE_WEBHOOK_URL='<url>'`\n4. Run: `./test-webhooks.sh 1` (or 2-6)\n\nEach trigger receives the payload and passes it to a Set node.",
+				"width": 800,
+				"height": 180
+			},
+			"id": "note_trg",
+			"name": "Trigger Test Instructions",
+			"type": "n8n-nodes-base.stickyNote",
+			"typeVersion": 1,
+			"position": [-60, 600]
+		},
+
+		{
+			"parameters": { "event": "post.created" },
+			"id": "trg1",
+			"name": "Trigger post.created",
+			"type": "n8n-nodes-featurebase.featurebaseTrigger",
+			"typeVersion": 1,
+			"position": [0, 840],
+			"webhookId": "fb-trg-1",
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{ "id": "a1", "name": "event", "value": "={{ $json.event }}", "type": "string" },
+						{ "id": "a2", "name": "title", "value": "={{ $json.data?.title || 'N/A' }}", "type": "string" },
+						{ "id": "a3", "name": "id", "value": "={{ $json.data?.id || 'N/A' }}", "type": "string" },
+						{ "id": "a4", "name": "result", "value": "post.created received!", "type": "string" }
+					]
+				}
+			},
+			"id": "fmt1",
+			"name": "Result post.created",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [300, 840]
+		},
+
+		{
+			"parameters": { "event": "post.updated" },
+			"id": "trg2",
+			"name": "Trigger post.updated",
+			"type": "n8n-nodes-featurebase.featurebaseTrigger",
+			"typeVersion": 1,
+			"position": [0, 1040],
+			"webhookId": "fb-trg-2",
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{ "id": "b1", "name": "event", "value": "={{ $json.event }}", "type": "string" },
+						{ "id": "b2", "name": "title", "value": "={{ $json.data?.title || 'N/A' }}", "type": "string" },
+						{ "id": "b3", "name": "id", "value": "={{ $json.data?.id || 'N/A' }}", "type": "string" },
+						{ "id": "b4", "name": "result", "value": "post.updated received!", "type": "string" }
+					]
+				}
+			},
+			"id": "fmt2",
+			"name": "Result post.updated",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [300, 1040]
+		},
+
+		{
+			"parameters": { "event": "post.status_changed" },
+			"id": "trg3",
+			"name": "Trigger post.status_changed",
+			"type": "n8n-nodes-featurebase.featurebaseTrigger",
+			"typeVersion": 1,
+			"position": [0, 1240],
+			"webhookId": "fb-trg-3",
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{ "id": "c1", "name": "event", "value": "={{ $json.event }}", "type": "string" },
+						{ "id": "c2", "name": "title", "value": "={{ $json.data?.title || 'N/A' }}", "type": "string" },
+						{ "id": "c3", "name": "status", "value": "={{ $json.data?.status || 'N/A' }}", "type": "string" },
+						{ "id": "c4", "name": "result", "value": "post.status_changed received!", "type": "string" }
+					]
+				}
+			},
+			"id": "fmt3",
+			"name": "Result post.status_changed",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [300, 1240]
+		},
+
+		{
+			"parameters": { "event": "comment.created" },
+			"id": "trg4",
+			"name": "Trigger comment.created",
+			"type": "n8n-nodes-featurebase.featurebaseTrigger",
+			"typeVersion": 1,
+			"position": [0, 1440],
+			"webhookId": "fb-trg-4",
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{ "id": "d1", "name": "event", "value": "={{ $json.event }}", "type": "string" },
+						{ "id": "d2", "name": "postTitle", "value": "={{ $json.data?.postTitle || 'N/A' }}", "type": "string" },
+						{ "id": "d3", "name": "content", "value": "={{ $json.data?.content || 'N/A' }}", "type": "string" },
+						{ "id": "d4", "name": "result", "value": "comment.created received!", "type": "string" }
+					]
+				}
+			},
+			"id": "fmt4",
+			"name": "Result comment.created",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [300, 1440]
+		},
+
+		{
+			"parameters": { "event": "changelog.published" },
+			"id": "trg5",
+			"name": "Trigger changelog.published",
+			"type": "n8n-nodes-featurebase.featurebaseTrigger",
+			"typeVersion": 1,
+			"position": [0, 1640],
+			"webhookId": "fb-trg-5",
+			"credentials": { "featurebaseApi": { "id": "1", "name": "Featurebase API" } }
+		},
+		{
+			"parameters": {
+				"assignments": {
+					"assignments": [
+						{ "id": "e1", "name": "event", "value": "={{ $json.event }}", "type": "string" },
+						{ "id": "e2", "name": "title", "value": "={{ $json.data?.title || 'N/A' }}", "type": "string" },
+						{ "id": "e3", "name": "published", "value": "={{ $json.data?.published }}", "type": "boolean" },
+						{ "id": "e4", "name": "result", "value": "changelog.published received!", "type": "string" }
+					]
+				}
+			},
+			"id": "fmt5",
+			"name": "Result changelog.published",
+			"type": "n8n-nodes-base.set",
+			"typeVersion": 3.4,
+			"position": [300, 1640]
+		}
+	],
+	"connections": {
+		"Start": {
+			"main": [[{ "node": "List Boards", "type": "main", "index": 0 }]]
+		},
+		"List Boards": {
+			"main": [[{ "node": "Pick Board", "type": "main", "index": 0 }]]
+		},
+		"Pick Board": {
+			"main": [[{ "node": "Get Board", "type": "main", "index": 0 }]]
+		},
+		"Get Board": {
+			"main": [[{ "node": "Create Post", "type": "main", "index": 0 }]]
+		},
+		"Create Post": {
+			"main": [[{ "node": "Get Post", "type": "main", "index": 0 }]]
+		},
+		"Get Post": {
+			"main": [[{ "node": "Update Post", "type": "main", "index": 0 }]]
+		},
+		"Update Post": {
+			"main": [[{ "node": "List Posts", "type": "main", "index": 0 }]]
+		},
+		"List Posts": {
+			"main": [[{ "node": "Create Comment", "type": "main", "index": 0 }]]
+		},
+		"Create Comment": {
+			"main": [[{ "node": "List Comments", "type": "main", "index": 0 }]]
+		},
+		"List Comments": {
+			"main": [[{ "node": "Delete Comment", "type": "main", "index": 0 }]]
+		},
+		"Delete Comment": {
+			"main": [[{ "node": "Delete Post", "type": "main", "index": 0 }]]
+		},
+		"Delete Post": {
+			"main": [[{ "node": "Create Changelog", "type": "main", "index": 0 }]]
+		},
+		"Create Changelog": {
+			"main": [[{ "node": "Get Changelog", "type": "main", "index": 0 }]]
+		},
+		"Get Changelog": {
+			"main": [[{ "node": "Update Changelog", "type": "main", "index": 0 }]]
+		},
+		"Update Changelog": {
+			"main": [[{ "node": "List Changelogs", "type": "main", "index": 0 }]]
+		},
+		"List Changelogs": {
+			"main": [[{ "node": "Delete Changelog", "type": "main", "index": 0 }]]
+		},
+		"Delete Changelog": {
+			"main": [[{ "node": "Upsert Contact", "type": "main", "index": 0 }]]
+		},
+		"Upsert Contact": {
+			"main": [[{ "node": "Get Contact", "type": "main", "index": 0 }]]
+		},
+		"Get Contact": {
+			"main": [[{ "node": "List Contacts", "type": "main", "index": 0 }]]
+		},
+		"Trigger post.created": {
+			"main": [[{ "node": "Result post.created", "type": "main", "index": 0 }]]
+		},
+		"Trigger post.updated": {
+			"main": [[{ "node": "Result post.updated", "type": "main", "index": 0 }]]
+		},
+		"Trigger post.status_changed": {
+			"main": [[{ "node": "Result post.status_changed", "type": "main", "index": 0 }]]
+		},
+		"Trigger comment.created": {
+			"main": [[{ "node": "Result comment.created", "type": "main", "index": 0 }]]
+		},
+		"Trigger changelog.published": {
+			"main": [[{ "node": "Result changelog.published", "type": "main", "index": 0 }]]
+		}
+	},
+	"pinData": {},
+	"settings": {
+		"executionOrder": "v1"
+	},
+	"staticData": null,
+	"tags": [],
+	"triggerCount": 5
+}
